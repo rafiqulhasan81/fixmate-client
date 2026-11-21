@@ -1,4 +1,4 @@
-
+import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 
@@ -94,6 +94,12 @@ async function ServiceDetailsContent({
           <p>
             <strong>Starting Price:</strong> ৳{service.startingPrice}
           </p>
+          <Link
+          href={`/booking/${service._id}`}
+          className="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+        >
+          Book Now
+        </Link>
         </div>
 
       </div>
