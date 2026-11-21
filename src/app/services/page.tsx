@@ -38,7 +38,7 @@ async function getAllServices(): Promise<Service[]> {
   }
 }
 
-// All Services Component
+
 // All Services Component
 async function AllServices({ category }: { category?: string }) {
   const services = await getAllServices();
@@ -79,6 +79,7 @@ async function AllServices({ category }: { category?: string }) {
                 key={service._id}
                 className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
               >
+                    
 
                 <Image
                   src={service.image}

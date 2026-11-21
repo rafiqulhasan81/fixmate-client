@@ -89,6 +89,12 @@ export default function MyBookingsPage() {
                 {booking.serviceTitle}
               </h2>
 
+              <img
+                src={booking.serviceImage}
+                alt={booking.serviceTitle}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+
               <p className="mt-2 text-sm text-gray-600">
                 Technician: {booking.technicianName}
               </p>
