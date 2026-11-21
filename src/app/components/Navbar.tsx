@@ -12,7 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 const Navbar = () => {
@@ -22,6 +22,8 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const pathname = usePathname();
+  const router = useRouter();
+
   const isLoggedIn = !!session?.user;
 
   const user = {
@@ -30,10 +32,25 @@ const Navbar = () => {
     image: session?.user?.image || "",
   };
 
+  // Sign Out Function
   const handleSignOut = async () => {
-    await authClient.signOut();
-    setIsProfileOpen(false);
-    setIsMenuOpen(false);
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      setIsProfileOpen(false);
+      setIsMenuOpen(false);
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign Out Error:", error);
+      alert("Sign out failed. Please try again.");
+    }
   };
 
   const navLinks = [
@@ -49,6 +66,7 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <div className="flex h-20 items-center justify-between">
 
           {/* Logo */}
@@ -56,6 +74,7 @@ const Navbar = () => {
             <span className="bg-blue-600 text-white p-2 rounded-lg">
               <Wrench size={24} />
             </span>
+
             <span className="text-2xl font-bold text-gray-900">
               FixMate
             </span>
@@ -80,14 +99,18 @@ const Navbar = () => {
 
           {/* Desktop User Section */}
           <div className="hidden md:flex items-center gap-3">
+
             {!isLoggedIn ? (
               <>
-                <Link href="/sign-in" className="px-5 py-2">
+                <Link
+                  href="/login"
+                  className="px-5 py-2"
+                >
                   Sign In
                 </Link>
 
                 <Link
-                  href="/sign-up"
+                  href="/register"
                   className="px-5 py-2.5 bg-blue-600 text-white rounded-lg"
                 >
                   Sign Up
@@ -165,13 +188,19 @@ const Navbar = () => {
             aria-label="Toggle navigation menu"
             aria-expanded={isMenuOpen}
           >
-            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            {isMenuOpen ? (
+              <X size={26} />
+            ) : (
+              <Menu size={26} />
+            )}
           </button>
+
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden pb-5 space-y-4">
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -188,10 +217,11 @@ const Navbar = () => {
             ))}
 
             <div className="flex gap-3 pt-2">
+
               {!isLoggedIn ? (
                 <>
                   <Link
-                    href="/sign-in"
+                    href="/login"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex-1 text-center border border-gray-300 rounded-lg py-2"
                   >
@@ -199,7 +229,7 @@ const Navbar = () => {
                   </Link>
 
                   <Link
-                    href="/sign-up"
+                    href="/register"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex-1 text-center bg-blue-600 text-white rounded-lg py-2"
                   >
@@ -224,9 +254,11 @@ const Navbar = () => {
                   </button>
                 </>
               )}
+
             </div>
           </div>
         )}
+
       </nav>
     </header>
   );
