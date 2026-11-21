@@ -1,11 +1,36 @@
 
 "use client";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 import { useState } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Login successful!");
+router.push("/");
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -19,7 +44,7 @@ export default function LoginPage() {
           Sign in to your FixMate account.
         </p>
 
-        <form className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -50,7 +75,7 @@ export default function LoginPage() {
           </div>
 
           <button
-            type="button"
+            type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
           >
             Sign In
