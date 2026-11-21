@@ -3,46 +3,84 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 import {
   LayoutDashboard,
   ClipboardList,
   UserRound,
   Home,
+  Wrench,
+  ClipboardCheck,
 } from "lucide-react";
-
-const menuItems = [
-  {
-    name: "Overview",
-    href: "/dashboard/customer",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "My Bookings",
-    href: "/dashboard/customer/bookings",
-    icon: ClipboardList,
-  },
-  {
-    name: "My Profile",
-    href: "/dashboard/profile",
-    icon: UserRound,
-  },
-];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+
+  const { data: session } = authClient.useSession();
+
+  const role = session?.user?.role || "customer";
+
+  const isTechnician = role === "technician";
+
+  const menuItems = isTechnician
+    ? [
+        {
+          name: "Overview",
+          href: "/dashboard/technician",
+          icon: LayoutDashboard,
+        },
+        {
+          name: "My Services",
+          href: "/dashboard/technician/services",
+          icon: Wrench,
+        },
+        {
+          name: "Service Requests",
+          href: "/dashboard/technician/requests",
+          icon: ClipboardList,
+        },
+        {
+          name: "Completed Jobs",
+          href: "/dashboard/technician/completed",
+          icon: ClipboardCheck,
+        },
+        {
+          name: "My Profile",
+          href: "/dashboard/profile",
+          icon: UserRound,
+        },
+      ]
+    : [
+        {
+          name: "Overview",
+          href: "/dashboard/customer",
+          icon: LayoutDashboard,
+        },
+        {
+          name: "My Bookings",
+          href: "/dashboard/customer/bookings",
+          icon: ClipboardList,
+        },
+        {
+          name: "My Profile",
+          href: "/dashboard/profile",
+          icon: UserRound,
+        },
+      ];
 
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-gray-200 p-5">
 
       <h2 className="text-xl font-bold text-gray-900 mb-8">
-        Customer Panel
+        {isTechnician ? "Technician Panel" : "Customer Panel"}
       </h2>
 
       <nav className="space-y-2">
 
         {menuItems.map((item) => {
           const Icon = item.icon;
+
           const isActive = pathname === item.href;
 
           return (

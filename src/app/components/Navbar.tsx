@@ -28,9 +28,23 @@ const Navbar = () => {
 
   const user = {
     name: session?.user?.name || "User",
-    role: session?.user?.role || "Customer",
+    role: session?.user?.role || "customer",
     image: session?.user?.image || "",
   };
+
+  // Role অনুযায়ী Dashboard নির্ধারণ
+  const dashboardLink =
+    user.role === "technician"
+      ? "/dashboard/technician"
+      : user.role === "admin"
+        ? "/dashboard/admin"
+        : "/dashboard/customer";
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Services", href: "/services" },
+    { name: "How It Works", href: "/about" },
+  ];
 
   // Sign Out Function
   const handleSignOut = async () => {
@@ -53,11 +67,20 @@ const Navbar = () => {
     }
   };
 
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Services", href: "/services" },
-    { name: "How It Works", href: "/about" },
-  ];
+  // Reusable Profile Avatar
+  const ProfileAvatar = () => (
+    <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+      {user.image ? (
+        <img
+          src={user.image}
+          alt={user.name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        user.name.charAt(0).toUpperCase()
+      )}
+    </div>
+  );
 
   if (isPending) {
     return <div className="h-20" />;
@@ -102,10 +125,7 @@ const Navbar = () => {
 
             {!isLoggedIn ? (
               <>
-                <Link
-                  href="/login"
-                  className="px-5 py-2"
-                >
+                <Link href="/login" className="px-5 py-2">
                   Sign In
                 </Link>
 
@@ -124,9 +144,7 @@ const Navbar = () => {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2"
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
+                  <ProfileAvatar />
 
                   <span className="font-medium text-gray-700">
                     {user.name}
@@ -144,13 +162,13 @@ const Navbar = () => {
                         {user.name}
                       </p>
 
-                      <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                      <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full capitalize">
                         {user.role}
                       </span>
                     </div>
 
                     <Link
-                      href="/dashboard/customer"
+                      href={dashboardLink}
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
                     >
@@ -188,11 +206,7 @@ const Navbar = () => {
             aria-label="Toggle navigation menu"
             aria-expanded={isMenuOpen}
           >
-            {isMenuOpen ? (
-              <X size={26} />
-            ) : (
-              <Menu size={26} />
-            )}
+            {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
           </button>
 
         </div>
@@ -201,6 +215,7 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden pb-5 space-y-4">
 
+            {/* Mobile Nav Links */}
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -216,10 +231,10 @@ const Navbar = () => {
               </Link>
             ))}
 
-            <div className="flex gap-3 pt-2">
+            <div className="border-t border-gray-200 pt-4">
 
               {!isLoggedIn ? (
-                <>
+                <div className="flex gap-3">
                   <Link
                     href="/login"
                     onClick={() => setIsMenuOpen(false)}
@@ -235,24 +250,55 @@ const Navbar = () => {
                   >
                     Sign Up
                   </Link>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="space-y-3">
+
+                  {/* Mobile User Information */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                    <ProfileAvatar />
+
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {user.name}
+                      </p>
+
+                      <p className="text-sm text-gray-500 capitalize">
+                        {user.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Mobile Dashboard */}
                   <Link
-                    href="/dashboard/customer"
+                    href={dashboardLink}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex-1 text-center bg-blue-600 text-white rounded-lg py-2"
+                    className="flex items-center gap-3 px-3 py-3 bg-blue-600 text-white rounded-lg"
                   >
+                    <LayoutDashboard size={18} />
                     Dashboard
                   </Link>
 
+                  {/* Mobile Update Profile */}
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
+                  >
+                    <UserRoundPen size={18} />
+                    Update Profile
+                  </Link>
+
+                  {/* Mobile Sign Out */}
                   <button
                     onClick={handleSignOut}
-                    className="flex-1 border border-red-300 text-red-600 rounded-lg py-2"
+                    className="w-full flex items-center gap-3 px-3 py-3 text-red-600 border border-red-200 hover:bg-red-50 rounded-lg"
                   >
+                    <LogOut size={18} />
                     Sign Out
                   </button>
-                </>
+
+                </div>
               )}
 
             </div>

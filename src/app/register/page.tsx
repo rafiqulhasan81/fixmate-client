@@ -1,50 +1,58 @@
-
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"customer" | "technician">("customer");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match!");
-    return;
-  }
-
-  if (password.length < 8) {
-    alert("Password must be at least 8 characters!");
-    return;
-  }
-
-  try {
-    const { data, error } = await authClient.signUp.email({
-      name,
-      email,
-      password,
-      phone,
-    });
-
-    if (error) {
-      alert(error.message);
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
       return;
     }
 
-    alert("Registration successful!");
-    console.log(data);
+    if (password.length < 8) {
+      alert("Password must be at least 8 characters!");
+      return;
+    }
 
-  } catch (error) {
-    console.error("Registration error:", error);
-    alert("Registration failed. Please try again.");
-  }
-};
+    try {
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        phone,
+        role,
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Registration successful!");
+
+      console.log(data);
+
+      router.push("/login");
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Registration failed. Please try again.");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -72,6 +80,7 @@ export default function RegisterPage() {
               placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -87,6 +96,7 @@ export default function RegisterPage() {
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -102,8 +112,31 @@ export default function RegisterPage() {
               placeholder="Enter your phone number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          {/* Role Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Register As
+            </label>
+
+            <select
+              value={role}
+              onChange={(e) =>
+                setRole(e.target.value as "customer" | "technician")
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="customer">Customer</option>
+              <option value="technician">Technician</option>
+            </select>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Choose Customer to request services or Technician to provide services.
+            </p>
           </div>
 
           {/* Password */}
@@ -117,6 +150,7 @@ export default function RegisterPage() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -132,6 +166,7 @@ export default function RegisterPage() {
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -148,9 +183,12 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-600 font-semibold hover:underline">
+          <Link
+            href="/login"
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Sign In
-          </a>
+          </Link>
         </p>
 
       </div>
