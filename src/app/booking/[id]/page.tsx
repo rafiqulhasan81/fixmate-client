@@ -36,6 +36,7 @@ function BookingContent() {
   const [address, setAddress] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // আজকের তারিখ
   const today = new Date().toLocaleDateString("en-CA");
@@ -48,6 +49,51 @@ function BookingContent() {
       );
     }
   }, [isPending, session, router, id]);
+
+  // Submit Booking Request
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  try {
+    setSubmitting(true);
+
+    const response = await fetch("http://localhost:5000/api/bookings", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify({
+        serviceId: id,
+        phone,
+        address,
+        preferredDate,
+        problemDescription,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Booking request failed");
+      return;
+    }
+
+    alert("Repair request submitted successfully!");
+
+    router.push("/dashboard/customer/bookings");
+
+  } catch (error) {
+    console.error("Booking submission error:", error);
+    alert("Something went wrong. Please try again.");
+
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   // Service-এর তথ্য আনা
   useEffect(() => {
@@ -137,8 +183,10 @@ function BookingContent() {
         </div>
 
         {/* Booking Form */}
-        <form className="bg-white rounded-xl shadow-md p-6 space-y-5">
-
+        <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-xl shadow-md p-6 space-y-5"
+            >
           <h2 className="text-2xl font-bold text-gray-900">
             Your Information
           </h2>
@@ -235,12 +283,12 @@ function BookingContent() {
           </div>
 
           <button
-            type="button"
-            disabled
-            className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
-          >
-            Submit Request (Coming Next)
-          </button>
+            type="submit"
+            disabled={submitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold"
+            >
+            {submitting ? "Submitting..." : "Submit Request"}
+            </button>
 
         </form>
       </div>
