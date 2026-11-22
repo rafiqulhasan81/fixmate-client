@@ -14,24 +14,51 @@ export default function AddServicePage() {
   const [serviceMode, setServiceMode] = useState("On-site");
   const [startingPrice, setStartingPrice] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    const serviceData = {
-      title,
-      category,
-      description,
-      image,
-      serviceMode,
-      startingPrice: Number(startingPrice),
-    };
+  const serviceData = {
+    title,
+    category,
+    description,
+    image,
+    serviceMode,
+    startingPrice: Number(startingPrice),
+  };
 
-    console.log("New Service Data:", serviceData);
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/technician/services",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(serviceData),
+      }
+    );
 
-    alert("Service form is working!");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to add service");
+    }
+
+    alert("Service added successfully!");
 
     router.push("/dashboard/technician/services");
-  };
+
+  } catch (error) {
+    console.error("Add service error:", error);
+
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong!"
+    );
+  }
+};
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

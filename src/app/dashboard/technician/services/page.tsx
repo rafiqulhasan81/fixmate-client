@@ -146,6 +146,15 @@ export default function MyServicesPage() {
                 <p className="text-sm">
                   Availability: {service.isAvailable ? "Available" : "Unavailable"}
                 </p>
+
+                <div className="flex gap-3 pt-3">
+                <Link
+                    href={`/dashboard/technician/services/edit/${service._id}`}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+                >
+                    Edit
+                </Link>
+                </div>
               </div>
             </div>
           ))}
