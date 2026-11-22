@@ -23,7 +23,9 @@ export default function MyServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionId, setActionId] = useState("");
 
+  // Load technician's services
   useEffect(() => {
     if (isPending) return;
 
@@ -43,9 +45,7 @@ export default function MyServicesPage() {
       try {
         const response = await fetch(
           "http://localhost:5000/api/technician/services/my",
-          {
-            credentials: "include",
-          }
+          { credentials: "include" }
         );
 
         const data = await response.json();
@@ -55,10 +55,7 @@ export default function MyServicesPage() {
         }
 
         setServices(data.services);
-        
       } catch (error) {
-        console.error("Services loading error:", error);
-
         setError(
           error instanceof Error
             ? error.message
@@ -72,6 +69,98 @@ export default function MyServicesPage() {
     fetchMyServices();
   }, [session, isPending]);
 
+  // Delete service
+  const handleDelete = async (serviceId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this service?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActionId(serviceId);
+
+      const response = await fetch(
+        `http://localhost:5000/api/technician/services/${serviceId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete service");
+      }
+
+      setServices((previousServices) =>
+        previousServices.filter(
+          (service) => service._id !== serviceId
+        )
+      );
+
+      alert("Service deleted successfully!");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setActionId("");
+    }
+  };
+
+  // Toggle service availability
+  const handleAvailability = async (
+    service: Service
+  ) => {
+    const newAvailability = !service.isAvailable;
+
+    try {
+      setActionId(service._id);
+
+      const response = await fetch(
+        `http://localhost:5000/api/technician/services/${service._id}/availability`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            isAvailable: newAvailability,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to update availability"
+        );
+      }
+
+      setServices((previousServices) =>
+        previousServices.map((item) =>
+          item._id === service._id
+            ? { ...item, isAvailable: newAvailability }
+            : item
+        )
+      );
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setActionId("");
+    }
+  };
+
   if (isPending || loading) {
     return <p className="p-6">Loading services...</p>;
   }
@@ -82,28 +171,31 @@ export default function MyServicesPage() {
 
   return (
     <div className="space-y-6">
-  <div>
-    <div className="flex items-center gap-8">
-      <h1 className="text-3xl font-bold text-gray-900">
-        My Services
-      </h1>
+      <div>
+        <div className="flex flex-wrap items-center gap-4">
+          <h1 className="text-3xl font-bold text-gray-900">
+            My Services
+          </h1>
 
-      <Link
-        href="/dashboard/technician/services/add"
-        className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
-      >
-        + Add New Service
-      </Link>
-    </div>
+          <Link
+            href="/dashboard/technician/services/add"
+            className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+          >
+            + Add New Service
+          </Link>
+        </div>
 
-    <p className="mt-2 text-gray-500">
-      Manage the repair services you provide.
-    </p>
-  </div>
+        <p className="mt-2 text-gray-500">
+          Manage the repair services you provide.
+        </p>
+      </div>
 
       {services.length === 0 ? (
         <div className="rounded-xl border bg-white p-10 text-center shadow-sm">
-          <Wrench size={35} className="mx-auto mb-4 text-blue-600" />
+          <Wrench
+            size={35}
+            className="mx-auto mb-4 text-blue-600"
+          />
 
           <h2 className="text-xl font-semibold">
             No Services Yet
@@ -144,16 +236,47 @@ export default function MyServicesPage() {
                 </p>
 
                 <p className="text-sm">
-                  Availability: {service.isAvailable ? "Available" : "Unavailable"}
+                  Availability:{" "}
+                  <span
+                    className={
+                      service.isAvailable
+                        ? "font-semibold text-green-600"
+                        : "font-semibold text-red-600"
+                    }
+                  >
+                    {service.isAvailable
+                      ? "Available"
+                      : "Unavailable"}
+                  </span>
                 </p>
 
-                <div className="flex gap-3 pt-3">
-                <Link
+                <div className="flex flex-wrap gap-2 pt-3">
+                  <Link
                     href={`/dashboard/technician/services/edit/${service._id}`}
                     className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-                >
+                  >
                     Edit
-                </Link>
+                  </Link>
+
+                  <button
+                    onClick={() => handleAvailability(service)}
+                    disabled={actionId === service._id}
+                    className="rounded-lg bg-amber-500 px-4 py-2 text-sm text-white hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    {actionId === service._id
+                      ? "Please wait..."
+                      : service.isAvailable
+                        ? "Make Unavailable"
+                        : "Make Available"}
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(service._id)}
+                    disabled={actionId === service._id}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
