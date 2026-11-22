@@ -42,7 +42,7 @@ export default function DashboardSidebar() {
         },
         {
           name: "Completed Jobs",
-          href: "/dashboard/technician/completed",
+          href:"/dashboard/technician/completed-jobs",
           icon: ClipboardCheck,
         },
         {
