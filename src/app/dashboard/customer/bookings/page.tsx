@@ -27,7 +27,7 @@ export default function MyBookingsPage() {
     const fetchBookings = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/bookings/my",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/my`,
           {
             credentials: "include",
           }

@@ -29,7 +29,7 @@ export default function ServiceApprovalPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admin/services?status=${filter}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/services?status=${filter}`,
         {
           credentials: "include",
         }

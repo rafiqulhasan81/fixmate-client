@@ -57,7 +57,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   try {
     setSubmitting(true);
 
-    const response = await fetch("http://localhost:5000/api/bookings", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
       method: "POST",
 
       headers: {

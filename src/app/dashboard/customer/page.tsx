@@ -63,7 +63,7 @@ export default function CustomerDashboard() {
         setError("");
 
         const response = await fetch(
-          "http://localhost:5000/api/bookings/my",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/my`,
           {
             credentials: "include",
           }

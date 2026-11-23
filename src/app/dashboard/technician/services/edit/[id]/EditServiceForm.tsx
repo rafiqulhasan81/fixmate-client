@@ -34,7 +34,7 @@ export default function EditServicePage() {
     const fetchService = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/services/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/services/${id}`
         );
 
         const data = await response.json();
@@ -322,3 +322,4 @@ export default function EditServicePage() {
     </div>
   );
 }
+

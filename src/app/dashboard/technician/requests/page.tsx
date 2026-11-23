@@ -38,7 +38,7 @@ export default function ServiceRequestsPage() {
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/technician/bookings/requests",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/technician/bookings/requests`,
         {
           credentials: "include",
         }

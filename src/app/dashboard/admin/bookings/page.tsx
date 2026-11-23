@@ -30,7 +30,7 @@ export default function AdminBookingsPage() {
         setLoading(true);
 
         const response = await fetch(
-          "http://localhost:5000/api/admin/bookings",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/bookings`,
           { credentials: "include" }
         );
 

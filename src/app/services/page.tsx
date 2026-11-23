@@ -21,7 +21,7 @@ interface Service {
 async function getAllServices(): Promise<Service[]> {
   try {
     const response = await fetch(
-      "http://localhost:5000/api/services",
+      `${process.env.NEXT_PUBLIC_API_URL}/api/services`,
       {
         cache: "no-store",
       }

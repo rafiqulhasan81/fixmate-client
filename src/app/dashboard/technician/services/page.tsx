@@ -44,7 +44,7 @@ export default function MyServicesPage() {
     const fetchMyServices = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/technician/services/my",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/technician/services/my`,
           { credentials: "include" }
         );
 

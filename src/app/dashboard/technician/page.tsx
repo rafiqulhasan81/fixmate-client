@@ -78,13 +78,13 @@ export default function TechnicianDashboard() {
         const [servicesResponse, bookingsResponse] =
           await Promise.all([
             fetch(
-              "http://localhost:5000/api/technician/services/my",
+              `${process.env.NEXT_PUBLIC_API_URL}/api/technician/services/my`,
               {
                 credentials: "include",
               }
             ),
             fetch(
-              "http://localhost:5000/api/technician/bookings/requests",
+              `${process.env.NEXT_PUBLIC_API_URL}/api/technician/bookings/requests`,
               {
                 credentials: "include",
               }
