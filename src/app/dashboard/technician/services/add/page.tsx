@@ -10,55 +10,63 @@ export default function AddServicePage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [serviceMode, setServiceMode] = useState("On-site");
   const [startingPrice, setStartingPrice] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const serviceData = {
-    title,
-    category,
-    description,
-    image,
-    serviceMode,
-    startingPrice: Number(startingPrice),
-  };
-
-  try {
-    const response = await fetch(
-      "http://localhost:5000/api/technician/services",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(serviceData),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to add service");
+    if (!image) {
+      alert("Please select a service image");
+      return;
     }
 
-    alert("Service added successfully!");
+    const formData = new FormData();
 
-    router.push("/dashboard/technician/services");
+    formData.append("title", title);
+    formData.append("category", category);
+    formData.append("description", description);
+    formData.append("image", image);
+    formData.append("serviceMode", serviceMode);
+    formData.append("startingPrice", startingPrice);
 
-  } catch (error) {
-    console.error("Add service error:", error);
+    try {
+      setLoading(true);
 
-    alert(
-      error instanceof Error
-        ? error.message
-        : "Something went wrong!"
-    );
-  }
-};
+      const response = await fetch(
+        "http://localhost:5000/api/technician/services",
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add service");
+      }
+
+      alert("Service added successfully!");
+
+      router.push("/dashboard/technician/services");
+
+    } catch (error) {
+      console.error("Add service error:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong!"
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -78,6 +86,7 @@ export default function AddServicePage() {
       >
         <div>
           <label className="mb-2 block font-medium">Service Title</label>
+
           <input
             type="text"
             value={title}
@@ -90,6 +99,7 @@ export default function AddServicePage() {
 
         <div>
           <label className="mb-2 block font-medium">Category</label>
+
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -107,6 +117,7 @@ export default function AddServicePage() {
 
         <div>
           <label className="mb-2 block font-medium">Description</label>
+
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -118,19 +129,32 @@ export default function AddServicePage() {
         </div>
 
         <div>
-          <label className="mb-2 block font-medium">Service Image URL</label>
+          <label className="mb-2 block font-medium">Service Image</label>
+
           <input
-            type="url"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="https://example.com/image.jpg"
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setImage(e.target.files?.[0] || null)
+            }
             required
             className="w-full rounded-lg border p-3"
           />
+
+          {image && (
+            <p className="mt-2 text-sm text-green-600">
+              Selected image: {image.name}
+            </p>
+          )}
+
+          <p className="mt-1 text-sm text-gray-500">
+            Maximum image size: 5 MB
+          </p>
         </div>
 
         <div>
           <label className="mb-2 block font-medium">Service Mode</label>
+
           <select
             value={serviceMode}
             onChange={(e) => setServiceMode(e.target.value)}
@@ -143,6 +167,7 @@ export default function AddServicePage() {
 
         <div>
           <label className="mb-2 block font-medium">Starting Price (৳)</label>
+
           <input
             type="number"
             min="1"
@@ -157,9 +182,10 @@ export default function AddServicePage() {
         <div className="flex gap-3 pt-3">
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            disabled={loading}
+            className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Submit Service
+            {loading ? "Uploading..." : "Submit Service"}
           </button>
 
           <button
