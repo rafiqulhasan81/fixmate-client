@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 export default function EditServicePage() {
@@ -15,7 +15,13 @@ export default function EditServicePage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+
+  // আগের ছবির URL
+  const [currentImage, setCurrentImage] = useState("");
+
+  // নতুন নির্বাচিত ছবি
+  const [newImage, setNewImage] = useState<File | null>(null);
+
   const [serviceMode, setServiceMode] = useState("On-site");
   const [startingPrice, setStartingPrice] = useState("");
 
@@ -37,14 +43,12 @@ export default function EditServicePage() {
           throw new Error(data.message || "Failed to load service");
         }
 
-        // পুরোনো তথ্য Form-এ বসানো
         setTitle(data.title || "");
         setCategory(data.category || "");
         setDescription(data.description || "");
-        setImage(data.image || "");
+        setCurrentImage(data.image || "");
         setServiceMode(data.serviceMode || "On-site");
         setStartingPrice(String(data.startingPrice ?? ""));
-
       } catch (error) {
         setError(
           error instanceof Error
@@ -61,9 +65,25 @@ export default function EditServicePage() {
     }
   }, [id]);
 
+  // নতুন ছবি নির্বাচন করা
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      setNewImage(file);
+    }
+  };
+
+  // Preview-এর জন্য ছবির URL
+  const imagePreview = newImage
+    ? URL.createObjectURL(newImage)
+    : currentImage;
+
   // Service Update করা
   const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
+    e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
@@ -71,22 +91,26 @@ export default function EditServicePage() {
     setError("");
 
     try {
+      // FormData তৈরি
+      const formData = new FormData();
+
+      formData.append("title", title);
+      formData.append("category", category);
+      formData.append("description", description);
+      formData.append("serviceMode", serviceMode);
+      formData.append("startingPrice", startingPrice);
+
+      // নতুন ছবি নির্বাচন করলে সেটি পাঠানো হবে
+      if (newImage) {
+        formData.append("image", newImage);
+      }
+
       const response = await fetch(
         `http://localhost:5000/api/technician/services/${id}`,
         {
           method: "PUT",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title,
-            category,
-            description,
-            image,
-            serviceMode,
-            startingPrice,
-          }),
+          body: formData,
         }
       );
 
@@ -202,19 +226,33 @@ export default function EditServicePage() {
           />
         </div>
 
-        {/* Service Image URL */}
+        {/* Service Image Upload */}
         <div>
           <label className="mb-2 block font-medium">
-            Service Image URL
+            Service Image
           </label>
 
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="mb-3">
+              <img
+                src={imagePreview}
+                alt="Service Preview"
+                className="h-48 w-full rounded-lg border object-cover"
+              />
+            </div>
+          )}
+
           <input
-            type="url"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            required
-            className="w-full rounded-lg border px-4 py-3 outline-none focus:border-blue-500"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full rounded-lg border px-4 py-3"
           />
+
+          <p className="mt-2 text-sm text-gray-500">
+            Select a new image only if you want to replace the current one.
+          </p>
         </div>
 
         {/* Service Mode */}
