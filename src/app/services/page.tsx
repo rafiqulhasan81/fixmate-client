@@ -1,9 +1,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
-import { connection } from "next/server";
-
 
 // Service Data Type
 interface Service {
@@ -17,11 +14,34 @@ interface Service {
   technicianName: string;
 }
 
+interface ServicesPageProps {
+  searchParams: Promise<{
+    search?: string;
+    category?: string;
+    serviceMode?: string;
+    sort?: string;
+  }>;
+}
+
 // Get All Services from Backend API
-async function getAllServices(): Promise<Service[]> {
+async function getAllServices(params: {
+  search: string;
+  category: string;
+  serviceMode: string;
+  sort: string;
+}): Promise<Service[]> {
   try {
+    const queryString = new URLSearchParams();
+
+    if (params.search) queryString.set("search", params.search);
+    if (params.category) queryString.set("category", params.category);
+    if (params.serviceMode) {
+      queryString.set("serviceMode", params.serviceMode);
+    }
+    if (params.sort) queryString.set("sort", params.sort);
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/services`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/services?${queryString.toString()}`,
       {
         cache: "no-store",
       }
@@ -31,76 +51,148 @@ async function getAllServices(): Promise<Service[]> {
       throw new Error("Failed to fetch services");
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    return data.services || [];
   } catch (error) {
     console.error("All services error:", error);
     return [];
   }
 }
 
+// Browse Services Page
+export default async function ServicesPage({
+  searchParams,
+}: ServicesPageProps) {
+  const params = await searchParams;
 
-// All Services Component
-async function AllServices({ category }: { category?: string }) {
-  const services = await getAllServices();
+  const search =
+    typeof params.search === "string" ? params.search : "";
 
-  const filteredServices = category
-    ? services.filter((service) => service.category === category)
-    : services;
+  const category =
+    typeof params.category === "string" ? params.category : "";
+
+  const serviceMode =
+    typeof params.serviceMode === "string"
+      ? params.serviceMode
+      : "";
+
+  const sort =
+    typeof params.sort === "string" ? params.sort : "newest";
+
+  // Fetch filtered and sorted services from MongoDB
+  const services = await getAllServices({
+    search,
+    category,
+    serviceMode,
+    sort,
+  });
 
   return (
-    <section className="bg-gray-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        {/* Section Heading */}
-        <div className="text-center mb-12">
-          <span className="text-blue-600 font-semibold">
+        {/* Page Heading */}
+        <div className="mb-10 text-center">
+          <span className="font-semibold text-blue-600">
             OUR SERVICES
           </span>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-3">
-            {category ? `${category} Repair Services` : "All Repair Services"}
+          <h1 className="mt-3 text-3xl font-bold text-gray-900 md:text-4xl">
+            {category
+              ? `${category} Repair Services`
+              : "All Repair Services"}
           </h1>
 
-          <p className="text-gray-600 mt-4">
+          <p className="mt-4 text-gray-600">
             Find the right repair service for your devices and appliances.
           </p>
         </div>
 
+        {/* Search, Filter and Sort Form */}
+        <form
+          action="/services"
+          method="GET"
+          className="mb-10 grid grid-cols-1 gap-4 rounded-xl bg-white p-5 shadow md:grid-cols-2 lg:grid-cols-5"
+        >
+          {/* Search */}
+          <input
+            type="text"
+            name="search"
+            defaultValue={search}
+            placeholder="Search services..."
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          />
+
+          {/* Category */}
+          <input
+            type="text"
+            name="category"
+            defaultValue={category}
+            placeholder="Category"
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          />
+
+          {/* Service Mode */}
+          <input
+            type="text"
+            name="serviceMode"
+            defaultValue={serviceMode}
+            placeholder="Service Mode"
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          />
+
+          {/* Sorting */}
+          <select
+            name="sort"
+            defaultValue={sort}
+            className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+          >
+            <option value="newest">Newest</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+          </select>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            Search & Filter
+          </button>
+        </form>
+
         {/* Service Cards */}
-        {filteredServices.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No services available in this category.
+        {services.length === 0 ? (
+          <p className="rounded-xl bg-white py-10 text-center text-gray-500 shadow">
+            No services found. Try changing your search or filters.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-            {filteredServices.map((service) => (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => (
               <div
                 key={service._id}
-                className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
+                className="overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:shadow-xl"
               >
-                    
-
                 <Image
                   src={service.image}
                   alt={service.title}
                   width={600}
                   height={400}
                   unoptimized
-                  className="w-full h-52 object-cover"
+                  className="h-52 w-full object-cover"
                 />
 
                 <div className="p-6">
-
                   <span className="text-sm font-semibold text-blue-600">
                     {service.category}
                   </span>
 
-                  <h2 className="text-xl font-bold text-gray-900 mt-2">
+                  <h2 className="mt-2 text-xl font-bold text-gray-900">
                     {service.title}
                   </h2>
 
-                  <p className="text-gray-600 text-sm mt-3 line-clamp-2">
+                  <p className="mt-3 line-clamp-2 text-sm text-gray-600">
                     {service.description}
                   </p>
 
@@ -116,8 +208,7 @@ async function AllServices({ category }: { category?: string }) {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t">
-
+                  <div className="mt-6 flex items-center justify-between gap-3 border-t pt-4">
                     <div>
                       <p className="text-xs text-gray-500">
                         Starting From
@@ -130,52 +221,17 @@ async function AllServices({ category }: { category?: string }) {
 
                     <Link
                       href={`/services/${service._id}`}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition"
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                     >
                       View Details
                     </Link>
-
                   </div>
-
                 </div>
               </div>
             ))}
-
           </div>
         )}
-
       </div>
-    </section>
-  );
-}
-
-// Services Page
-interface ServicesPageProps {
-  searchParams: Promise<{
-    category?: string;
-  }>;
-}
-
-async function ServicesContent({
-  searchParams,
-}: ServicesPageProps) {
-  const { category } = await searchParams;
-
-  return <AllServices category={category} />;
-}
-
-export default function ServicesPage() {
-  return (
-    <main className="min-h-screen bg-white">
-      <Suspense
-        fallback={
-          <p className="text-center py-20">
-            Loading services...
-          </p>
-        }
-      >
-        <ServicesContent searchParams={Promise.resolve({})} />
-      </Suspense>
     </main>
   );
 }
