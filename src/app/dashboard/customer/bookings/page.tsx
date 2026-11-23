@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Booking {
   _id: string;
@@ -43,11 +45,13 @@ export default function MyBookingsPage() {
       } catch (error) {
         console.error("Fetch bookings error:", error);
 
-        setError(
+        const message =
           error instanceof Error
             ? error.message
-            : "Something went wrong"
-        );
+            : "Something went wrong";
+
+        setError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -92,8 +96,8 @@ export default function MyBookingsPage() {
               <img
                 src={booking.serviceImage}
                 alt={booking.serviceTitle}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-                />
+                className="mb-4 h-48 w-full rounded-lg object-cover"
+              />
 
               <p className="mt-2 text-sm text-gray-600">
                 Technician: {booking.technicianName}

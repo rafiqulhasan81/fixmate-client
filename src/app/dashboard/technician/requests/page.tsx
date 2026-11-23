@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 type Booking = {
   _id: string;
@@ -32,7 +33,7 @@ export default function ServiceRequestsPage() {
   const userRole = session?.user?.role;
 
   // Load technician's service requests
-  const fetchBookings = async () => {
+  const fetchBookings = async (showToast = false) => {
     try {
       setLoading(true);
       setError("");
@@ -51,12 +52,18 @@ export default function ServiceRequestsPage() {
       }
 
       setBookings(data.bookings || []);
+
+      if (showToast) {
+        toast.success("Booking requests refreshed successfully!");
+      }
     } catch (err) {
-      setError(
+      const message =
         err instanceof Error
           ? err.message
-          : "Something went wrong"
-      );
+          : "Something went wrong";
+
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -107,18 +114,40 @@ export default function ServiceRequestsPage() {
       setBookings((previousBookings) =>
         previousBookings.map((booking) =>
           booking._id === bookingId
-            ? { ...booking, status: data.status }
+            ? { ...booking, status: data.status || status }
             : booking
         )
       );
 
-      alert(data.message || "Booking status updated successfully!");
+      // Status অনুযায়ী Success Toast
+      switch (status) {
+        case "accepted":
+          toast.success("Booking accepted successfully!");
+          break;
+
+        case "rejected":
+          toast.success("Booking rejected successfully!");
+          break;
+
+        case "in-progress":
+          toast.success("Work started successfully!");
+          break;
+
+        case "completed":
+          toast.success("Job completed successfully!");
+          break;
+
+        default:
+          toast.success(data.message || "Booking status updated!");
+      }
     } catch (err) {
-      alert(
+      const message =
         err instanceof Error
           ? err.message
-          : "Something went wrong"
-      );
+          : "Something went wrong";
+
+      setError(message);
+      toast.error(message);
     } finally {
       setUpdatingId(null);
     }
@@ -187,7 +216,6 @@ export default function ServiceRequestsPage() {
   return (
     <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
-
         {/* Page Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -200,8 +228,9 @@ export default function ServiceRequestsPage() {
           </div>
 
           <button
-            onClick={fetchBookings}
-            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700"
+            onClick={() => fetchBookings(true)}
+            disabled={loading}
+            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             Refresh Requests
           </button>
@@ -263,7 +292,6 @@ export default function ServiceRequestsPage() {
                 className="overflow-hidden rounded-xl border bg-white shadow-sm"
               >
                 <div className="flex flex-col gap-5 p-5 md:flex-row">
-
                   {/* Service Image */}
                   {booking.serviceImage && (
                     <img
@@ -336,7 +364,6 @@ export default function ServiceRequestsPage() {
 
                     {/* Action Buttons */}
                     <div className="mt-5 flex flex-wrap gap-3">
-
                       {booking.status === "requested" && (
                         <>
                           <button

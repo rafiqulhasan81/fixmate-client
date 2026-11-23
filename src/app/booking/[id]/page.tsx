@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import { Suspense, useEffect, useState } from "react";
 
 // Service Data Type
@@ -51,49 +52,57 @@ function BookingContent() {
   }, [isPending, session, router, id]);
 
   // Submit Booking Request
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  try {
-    setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
-      method: "POST",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/bookings`,
+        {
+          method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-      },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-      credentials: "include",
+          credentials: "include",
 
-      body: JSON.stringify({
-        serviceId: id,
-        phone,
-        address,
-        preferredDate,
-        problemDescription,
-      }),
-    });
+          body: JSON.stringify({
+            serviceId: id,
+            phone,
+            address,
+            preferredDate,
+            problemDescription,
+          }),
+        }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      alert(data.message || "Booking request failed");
-      return;
+      if (!response.ok) {
+        throw new Error(data.message || "Booking request failed");
+      }
+
+      toast.success("Repair request submitted successfully!");
+
+      router.push("/dashboard/customer/bookings");
+
+    } catch (error) {
+      console.error("Booking submission error:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.";
+
+      toast.error(message);
+
+    } finally {
+      setSubmitting(false);
     }
-
-    alert("Repair request submitted successfully!");
-
-    router.push("/dashboard/customer/bookings");
-
-  } catch (error) {
-    console.error("Booking submission error:", error);
-    alert("Something went wrong. Please try again.");
-
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   // Service-এর তথ্য আনা
   useEffect(() => {
@@ -109,8 +118,17 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
         const data = await response.json();
         setService(data);
+
       } catch (error) {
         console.error("Service fetch error:", error);
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to load service";
+
+        toast.error(message);
+
       } finally {
         setLoading(false);
       }
@@ -184,9 +202,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
         {/* Booking Form */}
         <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-xl shadow-md p-6 space-y-5"
-            >
+          onSubmit={handleSubmit}
+          className="bg-white rounded-xl shadow-md p-6 space-y-5"
+        >
           <h2 className="text-2xl font-bold text-gray-900">
             Your Information
           </h2>
@@ -286,14 +304,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             type="submit"
             disabled={submitting}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold"
-            >
+          >
             {submitting ? "Submitting..." : "Submit Request"}
-            </button>
+          </button>
 
         </form>
       </div>
-
-      
     </main>
   );
 }

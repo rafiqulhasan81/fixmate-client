@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { data: session, isPending } = authClient.useSession();
@@ -33,20 +34,29 @@ export default function ProfilePage() {
 
     try {
       const { error } = await authClient.updateUser({
-  name: name.trim(),
-  image: image.trim() || undefined,
-  phone: phone.trim(),
-});
+        name: name.trim(),
+        image: image.trim() || undefined,
+        phone: phone.trim(),
+      });
 
       if (error) {
         throw new Error(error.message || "Profile update failed");
       }
 
-      setMessage("Profile updated successfully!");
+      const successMessage = "Profile updated successfully!";
+
+      setMessage(successMessage);
+      toast.success(successMessage);
+
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong"
-      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong";
+
+      setError(errorMessage);
+      toast.error(errorMessage);
+
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface User {
   _id: string;
@@ -36,6 +37,12 @@ export default function ManageUsersPage() {
       setUsers(data.users);
     } catch (error) {
       console.error("Fetch users error:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load users"
+      );
     } finally {
       setLoading(false);
     }
@@ -74,13 +81,16 @@ export default function ManageUsersPage() {
         throw new Error(data.message || "Failed to update role");
       }
 
-      alert("User role updated successfully!");
+      toast.success("User role updated successfully!");
 
       await fetchUsers();
     } catch (error) {
       console.error("Update role error:", error);
-      alert(
-        error instanceof Error ? error.message : "Something went wrong"
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong"
       );
     } finally {
       setUpdatingId(null);

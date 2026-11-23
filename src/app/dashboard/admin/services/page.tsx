@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Service {
   _id: string;
@@ -44,6 +45,12 @@ export default function ServiceApprovalPage() {
       setServices(data.services);
     } catch (error) {
       console.error("Fetch services error:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load services"
+      );
     } finally {
       setLoading(false);
     }
@@ -85,13 +92,15 @@ export default function ServiceApprovalPage() {
         throw new Error(data.message || "Failed to update service");
       }
 
-      alert(`Service ${approvalStatus} successfully!`);
+      toast.success(
+        `Service ${approvalStatus} successfully!`
+      );
 
       await fetchServices();
     } catch (error) {
       console.error("Update service error:", error);
 
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong"

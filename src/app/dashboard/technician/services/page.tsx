@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Wrench } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Service {
   _id: string;
@@ -56,11 +57,13 @@ export default function MyServicesPage() {
 
         setServices(data.services);
       } catch (error) {
-        setError(
+        const message =
           error instanceof Error
             ? error.message
-            : "Something went wrong."
-        );
+            : "Something went wrong.";
+
+        setError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -100,9 +103,9 @@ export default function MyServicesPage() {
         )
       );
 
-      alert("Service deleted successfully!");
+      toast.success("Service deleted successfully!");
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong."
@@ -113,9 +116,7 @@ export default function MyServicesPage() {
   };
 
   // Toggle service availability
-  const handleAvailability = async (
-    service: Service
-  ) => {
+  const handleAvailability = async (service: Service) => {
     const newAvailability = !service.isAvailable;
 
     try {
@@ -150,8 +151,14 @@ export default function MyServicesPage() {
             : item
         )
       );
+
+      toast.success(
+        newAvailability
+          ? "Service is now available!"
+          : "Service is now unavailable!"
+      );
     } catch (error) {
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong."

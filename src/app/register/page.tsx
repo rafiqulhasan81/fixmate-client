@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,12 +21,12 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
 
     if (password.length < 8) {
-      alert("Password must be at least 8 characters!");
+      toast.error("Password must be at least 8 characters!");
       return;
     }
 
@@ -38,11 +40,11 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        alert(error.message);
+        toast.error(error.message);
         return;
       }
 
-      alert("Registration successful!");
+      toast.success("Registration successful!");
 
       console.log(data);
 
@@ -50,7 +52,7 @@ export default function RegisterPage() {
 
     } catch (error) {
       console.error("Registration error:", error);
-      alert("Registration failed. Please try again.");
+      toast.error("Registration failed. Please try again.");
     }
   };
 

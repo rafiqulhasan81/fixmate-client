@@ -1,9 +1,10 @@
 
 "use client";
+
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,26 +12,26 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    if (error) {
-      alert(error.message);
-      return;
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Login successful!");
+      router.push("/");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Something went wrong. Please try again.");
     }
-
-    alert("Login successful!");
-router.push("/");
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("Something went wrong. Please try again.");
-  }
-};
+  };
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -85,7 +86,10 @@ router.push("/");
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Don't have an account?{" "}
-          <a href="/register" className="text-blue-600 font-semibold hover:underline">
+          <a
+            href="/register"
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Create Account
           </a>
         </p>

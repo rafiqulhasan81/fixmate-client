@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -52,9 +53,11 @@ const Navbar = () => {
       const { error } = await authClient.signOut();
 
       if (error) {
-        alert(error.message);
+        toast.error(error.message);
         return;
       }
+
+      toast.success("Signed out successfully!");
 
       setIsProfileOpen(false);
       setIsMenuOpen(false);
@@ -63,7 +66,7 @@ const Navbar = () => {
       router.refresh();
     } catch (error) {
       console.error("Sign Out Error:", error);
-      alert("Sign out failed. Please try again.");
+      toast.error("Sign out failed. Please try again.");
     }
   };
 

@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function AddServicePage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function AddServicePage() {
     e.preventDefault();
 
     if (!image) {
-      alert("Please select a service image");
+      toast.error("Please select a service image");
       return;
     }
 
@@ -50,14 +51,14 @@ export default function AddServicePage() {
         throw new Error(data.message || "Failed to add service");
       }
 
-      alert("Service added successfully!");
+      toast.success("Service added successfully!");
 
       router.push("/dashboard/technician/services");
 
     } catch (error) {
       console.error("Add service error:", error);
 
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong!"

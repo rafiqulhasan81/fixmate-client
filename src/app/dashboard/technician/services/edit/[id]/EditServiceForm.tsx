@@ -3,23 +3,19 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function EditServicePage() {
   const params = useParams();
   const router = useRouter();
 
-  // URL থেকে Service ID সংগ্রহ
   const id = params.id as string;
 
-  // Form-এর জন্য State
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
 
-  // আগের ছবির URL
   const [currentImage, setCurrentImage] = useState("");
-
-  // নতুন নির্বাচিত ছবি
   const [newImage, setNewImage] = useState<File | null>(null);
 
   const [serviceMode, setServiceMode] = useState("On-site");
@@ -50,11 +46,13 @@ export default function EditServicePage() {
         setServiceMode(data.serviceMode || "On-site");
         setStartingPrice(String(data.startingPrice ?? ""));
       } catch (error) {
-        setError(
+        const message =
           error instanceof Error
             ? error.message
-            : "Something went wrong"
-        );
+            : "Something went wrong";
+
+        setError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -91,7 +89,6 @@ export default function EditServicePage() {
     setError("");
 
     try {
-      // FormData তৈরি
       const formData = new FormData();
 
       formData.append("title", title);
@@ -100,7 +97,6 @@ export default function EditServicePage() {
       formData.append("serviceMode", serviceMode);
       formData.append("startingPrice", startingPrice);
 
-      // নতুন ছবি নির্বাচন করলে সেটি পাঠানো হবে
       if (newImage) {
         formData.append("image", newImage);
       }
@@ -120,23 +116,25 @@ export default function EditServicePage() {
         throw new Error(data.message || "Failed to update service");
       }
 
-      alert("Service updated successfully!");
+      toast.success("Service updated successfully!");
 
       router.push("/dashboard/technician/services");
       router.refresh();
 
     } catch (error) {
-      setError(
+      const message =
         error instanceof Error
           ? error.message
-          : "Something went wrong"
-      );
+          : "Something went wrong";
+
+      setError(message);
+      toast.error(message);
+
     } finally {
       setSaving(false);
     }
   };
 
-  // Loading অবস্থায়
   if (loading) {
     return (
       <p className="p-6">
@@ -145,7 +143,6 @@ export default function EditServicePage() {
     );
   }
 
-  // Service লোড করতে সমস্যা হলে
   if (error && !title) {
     return (
       <p className="p-6 text-red-600">
@@ -156,8 +153,6 @@ export default function EditServicePage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-
-      {/* Page Heading */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">
           Edit Service
@@ -168,13 +163,10 @@ export default function EditServicePage() {
         </p>
       </div>
 
-      {/* Edit Form */}
       <form
         onSubmit={handleSubmit}
         className="space-y-5 rounded-xl border bg-white p-6 shadow-sm"
       >
-
-        {/* Service Title */}
         <div>
           <label className="mb-2 block font-medium">
             Service Title
@@ -189,7 +181,6 @@ export default function EditServicePage() {
           />
         </div>
 
-        {/* Category */}
         <div>
           <label className="mb-2 block font-medium">
             Category
@@ -211,7 +202,6 @@ export default function EditServicePage() {
           </select>
         </div>
 
-        {/* Description */}
         <div>
           <label className="mb-2 block font-medium">
             Description
@@ -226,13 +216,11 @@ export default function EditServicePage() {
           />
         </div>
 
-        {/* Service Image Upload */}
         <div>
           <label className="mb-2 block font-medium">
             Service Image
           </label>
 
-          {/* Image Preview */}
           {imagePreview && (
             <div className="mb-3">
               <img
@@ -255,7 +243,6 @@ export default function EditServicePage() {
           </p>
         </div>
 
-        {/* Service Mode */}
         <div>
           <label className="mb-2 block font-medium">
             Service Mode
@@ -273,7 +260,6 @@ export default function EditServicePage() {
           </select>
         </div>
 
-        {/* Starting Price */}
         <div>
           <label className="mb-2 block font-medium">
             Starting Price (৳)
@@ -289,16 +275,13 @@ export default function EditServicePage() {
           />
         </div>
 
-        {/* Error Message */}
         {error && (
           <p className="text-sm text-red-600">
             {error}
           </p>
         )}
 
-        {/* Action Buttons */}
         <div className="flex gap-3">
-
           <button
             type="submit"
             disabled={saving}
@@ -316,10 +299,8 @@ export default function EditServicePage() {
           >
             Cancel
           </button>
-
         </div>
       </form>
     </div>
   );
 }
-

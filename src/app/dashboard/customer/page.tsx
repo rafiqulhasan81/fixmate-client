@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 import {
   ClipboardList,
   Clock,
@@ -82,11 +83,13 @@ export default function CustomerDashboard() {
       } catch (err) {
         console.error("Fetch bookings error:", err);
 
-        setError(
+        const message =
           err instanceof Error
             ? err.message
-            : "Something went wrong"
-        );
+            : "Something went wrong";
+
+        setError(message);
+        toast.error(message);
 
       } finally {
         setLoading(false);
