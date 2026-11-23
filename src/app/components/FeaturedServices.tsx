@@ -18,7 +18,7 @@ interface Service {
 async function getFeaturedServices(): Promise<Service[]> {
   try {
     const response = await fetch(
-      "http://localhost:5000/api/services/featured",
+      `${process.env.NEXT_PUBLIC_API_URL}/api/services/featured`,
       {
         cache: "no-store",
       }
