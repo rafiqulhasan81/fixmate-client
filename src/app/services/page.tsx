@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -40,8 +41,14 @@ async function getAllServices(params: {
     }
     if (params.sort) queryString.set("sort", params.sort);
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      throw new Error("NEXT_PUBLIC_API_URL is not configured");
+    }
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/services?${queryString.toString()}`,
+      `${apiUrl}/api/services?${queryString.toString()}`,
       {
         cache: "no-store",
       }
@@ -60,8 +67,8 @@ async function getAllServices(params: {
   }
 }
 
-// Browse Services Page
-export default async function ServicesPage({
+// Services Content
+async function ServicesContent({
   searchParams,
 }: ServicesPageProps) {
   const params = await searchParams;
@@ -115,7 +122,6 @@ export default async function ServicesPage({
           method="GET"
           className="mb-10 grid grid-cols-1 gap-4 rounded-xl bg-white p-5 shadow md:grid-cols-2 lg:grid-cols-5"
         >
-          {/* Search */}
           <input
             type="text"
             name="search"
@@ -124,7 +130,6 @@ export default async function ServicesPage({
             className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
 
-          {/* Category */}
           <input
             type="text"
             name="category"
@@ -133,7 +138,6 @@ export default async function ServicesPage({
             className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
 
-          {/* Service Mode */}
           <input
             type="text"
             name="serviceMode"
@@ -142,7 +146,6 @@ export default async function ServicesPage({
             className="rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
 
-          {/* Sorting */}
           <select
             name="sort"
             defaultValue={sort}
@@ -153,7 +156,6 @@ export default async function ServicesPage({
             <option value="price-high">Price: High to Low</option>
           </select>
 
-          {/* Submit */}
           <button
             type="submit"
             className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
@@ -233,5 +235,22 @@ export default async function ServicesPage({
         )}
       </div>
     </main>
+  );
+}
+
+// Browse Services Page
+export default function ServicesPage({
+  searchParams,
+}: ServicesPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 py-20 text-center text-gray-600">
+          Loading services...
+        </div>
+      }
+    >
+      <ServicesContent searchParams={searchParams} />
+    </Suspense>
   );
 }

@@ -1,4 +1,6 @@
 
+import { Suspense } from "react";
+import { connection } from "next/server";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -17,8 +19,14 @@ interface Service {
 // Fetch Latest 6 Featured Services
 async function getFeaturedServices(): Promise<Service[]> {
   try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      throw new Error("NEXT_PUBLIC_API_URL is not configured");
+    }
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/services/featured`,
+      `${apiUrl}/api/services/featured`,
       {
         cache: "no-store",
       }
@@ -35,8 +43,11 @@ async function getFeaturedServices(): Promise<Service[]> {
   }
 }
 
-// Featured Services Component
-export default async function FeaturedServices() {
+// Featured Services Content
+async function FeaturedServicesContent() {
+  // Ensure this component runs at request time
+  await connection();
+
   const services = await getFeaturedServices();
 
   return (
@@ -65,7 +76,6 @@ export default async function FeaturedServices() {
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-
             {services.map((service) => (
               <div
                 key={service._id}
@@ -111,7 +121,7 @@ export default async function FeaturedServices() {
                   </div>
 
                   {/* Price and Details Button */}
-                  <div className="mt-auto flex items-center justify-between gap-3 border-t pt-5 mt-6">
+                  <div className="mt-auto mt-6 flex items-center justify-between gap-3 border-t pt-5">
 
                     <div>
                       <p className="text-xs text-gray-500">
@@ -134,7 +144,6 @@ export default async function FeaturedServices() {
                 </div>
               </div>
             ))}
-
           </div>
         )}
 
@@ -150,5 +159,20 @@ export default async function FeaturedServices() {
 
       </div>
     </section>
+  );
+}
+
+// Featured Services Component
+export default function FeaturedServices() {
+  return (
+    <Suspense
+      fallback={
+        <section className="bg-gray-50 py-16 text-center text-gray-600">
+          Loading featured services...
+        </section>
+      }
+    >
+      <FeaturedServicesContent />
+    </Suspense>
   );
 }
