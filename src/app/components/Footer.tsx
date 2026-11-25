@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { Wrench } from "lucide-react";
 
-
 export default function Footer() {
   return (
     <footer className="bg-gray-950 text-gray-300">
@@ -32,13 +31,27 @@ export default function Footer() {
             </h3>
 
             <ul className="space-y-3 text-sm">
-              <li><Link href="/" className="hover:text-blue-400">Home</Link></li>
-              <li><Link href="/services" className="hover:text-blue-400">Services</Link></li>
-              <li><Link href="/about" className="hover:text-blue-400">How It Works</Link></li>
+              <li>
+                <Link href="/" className="hover:text-blue-400 transition-colors">
+                  Home
+                </Link>
+              </li>
+
+              <li>
+                <Link href="/services" className="hover:text-blue-400 transition-colors">
+                  Services
+                </Link>
+              </li>
+
+              <li>
+                <Link href="/about" className="hover:text-blue-400 transition-colors">
+                  About
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Popular Categories */}
           <div>
             <h3 className="text-white font-semibold text-lg mb-5">
               Popular Categories
@@ -68,11 +81,66 @@ export default function Footer() {
 
         </div>
 
+        {/* Social Links */}
+        <div className="mt-10">
+          <h3 className="text-white font-semibold text-lg mb-5">
+            Follow Us
+          </h3>
+
+          <div className="flex items-center gap-5">
+
+            {/* Facebook */}
+            <Link
+              href="https://www.facebook.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="text-lg font-bold hover:text-blue-500 transition-colors"
+            >
+              f
+            </Link>
+
+            {/* Instagram */}
+            <Link
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="text-2xl hover:text-pink-500 transition-colors"
+            >
+              ◎
+            </Link>
+
+            {/* LinkedIn */}
+            <Link
+              href="https://www.linkedin.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="text-lg font-bold hover:text-blue-400 transition-colors"
+            >
+              in
+            </Link>
+
+            {/* X */}
+            <Link
+              href="https://x.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="X"
+              className="text-xl font-bold hover:text-white transition-colors"
+            >
+              𝕏
+            </Link>
+
+          </div>
+        </div>
+
         {/* Copyright */}
-                <div className="border-t border-gray-800 mt-12 pt-6 text-center">
-        <p className="text-sm text-gray-500">
+        <div className="border-t border-gray-800 mt-12 pt-6 text-center">
+          <p className="text-sm text-gray-500">
             © 2026 FixMate. All rights reserved.
-        </p>
+          </p>
         </div>
 
       </div>
