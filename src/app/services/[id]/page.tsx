@@ -24,7 +24,7 @@ interface ServiceDetailsProps {
 async function getServiceDetails(id: string): Promise<Service | null> {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/services/${id}`,
+     `${process.env.NEXT_PUBLIC_API_URL}/api/services/${id}`,
       {
         cache: "no-store",
       }
